@@ -25,6 +25,18 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.ParameterValueGroup;
 
+/**
+ * Homolosine projection
+ *
+ * @see <A HREF="https://doi.org/10.2307%2F2560812">Goode, J.P. (1925). 
+ * 		"The Homolosine projection - a new device for portraying the Earth's surface entire". Annals of 
+ *		the Association of American Geographers. 15 (3): 119–125</A>
+ * @see <A HREF="https://en.wikipedia.org/wiki/Goode_homolosine_projection">The Homolosine projection on
+ *     Wikipedia</A>
+ * @since 14.0 << Check what is this
+ * @author Luís M. de Sousa
+ */
+
 public class Homolosine extends MapProjection {
     /** For cross-version compatibility. */
     private static final long serialVersionUID = -737778661392950541L;
@@ -84,3 +96,53 @@ public class Homolosine extends MapProjection {
 			return moll.transformNormalized(lam_shift, phi, ptDst)
 		}
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                          ////////
+    ////////                                 PROVIDERS                                ////////
+    ////////                                                                          ////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The {@linkplain org.geotools.referencing.operation.MathTransformProvider math transform
+     * provider} for the Homolosine projection (not part of the EPSG database).
+     *
+     * @since 14.0
+     * @author Mihail Andreev
+     * @see org.geotools.referencing.operation.DefaultMathTransformFactory
+     */
+    public static class Provider extends AbstractProvider {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 8374488793001927036L;
+
+        /** The parameters group. */
+        static final ParameterDescriptorGroup PARAMETERS =
+                createDescriptorGroup(
+                        new NamedIdentifier[] {
+                            new NamedIdentifier(Citations.GEOTOOLS, "Homolosine"),
+                            new NamedIdentifier(Citations.ESRI, "Homolosine")
+                        },
+                        new ParameterDescriptor[] {
+                            SEMI_MAJOR, SEMI_MINOR, CENTRAL_MERIDIAN, FALSE_EASTING, FALSE_NORTHING
+                        });
+
+        /** Constructs a new provider. */
+        public Provider() {
+            super(PARAMETERS);
+        }
+
+        /**
+         * Creates a transform from the specified group of parameter values.
+         *
+         * @param parameters The group of parameter values.
+         * @return The created math transform.
+         * @throws ParameterNotFoundException if a required parameter was not found.
+         */
+        protected MathTransform createMathTransform(final ParameterValueGroup parameters)
+                throws ParameterNotFoundException {
+            return new Homolosine(parameters);
+        }
+    }
+}
