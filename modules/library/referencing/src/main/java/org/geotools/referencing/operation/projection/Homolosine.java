@@ -21,31 +21,34 @@
 package org.geotools.referencing.operation.projection;
 
 import java.awt.geom.Point2D;
+import org.geotools.metadata.iso.citation.Citations;
+import org.geotools.referencing.NamedIdentifier;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.operation.MathTransform;
 
 /**
  * Homolosine projection
  *
- * @see <A HREF="https://doi.org/10.2307%2F2560812">Goode, J.P. (1925). 
- * 		"The Homolosine projection - a new device for portraying the Earth's surface entire". Annals of 
- *		the Association of American Geographers. 15 (3): 119–125</A>
- * @see <A HREF="https://en.wikipedia.org/wiki/Goode_homolosine_projection">The Homolosine projection on
- *     Wikipedia</A>
+ * @see <A HREF="https://doi.org/10.2307%2F2560812">Goode, J.P. (1925). "The Homolosine projection -
+ *     a new device for portraying the Earth's surface entire". Annals of the Association of
+ *     American Geographers. 15 (3): 119–125</A>
+ * @see <A HREF="https://en.wikipedia.org/wiki/Goode_homolosine_projection">The Homolosine
+ *     projection on Wikipedia</A>
  * @since 14.0 << Check what is this
  * @author Luís M. de Sousa
  */
-
 public class Homolosine extends MapProjection {
     /** For cross-version compatibility. */
     private static final long serialVersionUID = -737778661392950541L;
 
-	private static double LAT_THRESH = 40 + 44/60. + 11.8/3600.;
+    private static double LAT_THRESH = 40 + 44 / 60. + 11.8 / 3600.;
+    private static double NORTH_THRESH = 4534778.81;
 
-    private static final int[] INTERRUP_NORTH = [-180, -40, 180];
-    private static final int[] INTERRUP_SOUTH = [-180, -100, -20, 80, 180];
-
+    private static final int[] INTERRUP_NORTH = {-180, -40, 180};
+    private static final int[] INTERRUP_SOUTH = {-180, -100, -20, 80, 180};
 
     ParameterDescriptorGroup descriptors;
 
@@ -56,14 +59,16 @@ public class Homolosine extends MapProjection {
      * @throws ParameterNotFoundException if a mandatory parameter is missing.
      */
     protected Homolosine(
-            ProjectionMode mode,
-            final ParameterDescriptorGroup descriptors,
-            final ParameterValueGroup parameters)
+            final ParameterDescriptorGroup descriptors, final ParameterValueGroup parameters)
             throws ParameterNotFoundException {
 
         super(parameters, descriptors.descriptors());
         this.descriptors = descriptors;
+    }
 
+    /** {@inheritDoc} */
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return Provider.PARAMETERS;
     }
 
     /**
@@ -73,28 +78,45 @@ public class Homolosine extends MapProjection {
     protected Point2D transformNormalized(double lam, double phi, Point2D ptDst)
             throws ProjectionException {
 
-		int[] interruptions;
-		int i = 0;
+        int[] interruptions;
+        int i = 0;
+        double lam_shift = 0;
 
-		if(phi >= 0) 
-			interruptions = INTERRUP_NORTH;
-		else 
-			interruptions = INTERRUP_SOUTH;
+        if (phi >= 0) interruptions = INTERRUP_NORTH;
+        else interruptions = INTERRUP_SOUTH;
 
-		while (phi > interruptions[i++])	
+        while (phi > interruptions[i++])
+            lam_shift = lam - (interruptions[i] - interruptions[i - 1]) / 2;
 
-		lam_shift = lam - (interruptions[i] - interruptions[i-1]) / 2;
+        if (phi > LAT_THRESH || phi < -LAT_THRESH) { // Mollweide
+            Mollweide moll =
+                    Mollweide(
+                            Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
+            return moll.transformNormalized(lam_shift, phi, ptDst);
+        } else { // Sinusoidal
+            Sinusoidal sinu = Sinusoidal(this.parameters);
+            return sinu.transformNormalized(lam_shift, phi, ptDst);
+        }
+    }
 
- 		if(phi > LAT_TRESH || phi < -LAT_TRESH)
-		{ // Mollweide
-			moll = Mollweide(ProjectionMode.Mollweide, this.descriptors, this.parameters)
-			return moll.transformNormalized(lam_shift, phi, ptDst)
-		}
-		else
-		{ // Sinusoidal
-			sinu = Sinusoidal(this.parameters)
-			return moll.transformNormalized(lam_shift, phi, ptDst)
-		}
+    /**
+     * Transforms the specified (<var>x</var>,<var>y</var>) coordinates and stores the result in
+     * {@code ptDst}.
+     */
+    protected Point2D inverseTransformNormalized(double x, double y, final Point2D ptDst)
+            throws ProjectionException {
+        double phi;
+        double lam;
+
+        if (y > NORTH_THRESH || y < -NORTH_THRESH) { // Mollweide
+            Mollweide moll =
+                    Mollweide(
+                            Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
+            return moll.inverseTransformNormalized(x, y, ptDst);
+        } else { // Sinusoidal
+            Sinusoidal sinu = Sinusoidal(this.parameters);
+            return sinu.inverseTransformNormalized(x, y, ptDst);
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -142,7 +164,7 @@ public class Homolosine extends MapProjection {
          */
         protected MathTransform createMathTransform(final ParameterValueGroup parameters)
                 throws ParameterNotFoundException {
-            return new Homolosine(parameters);
+            return new Homolosine(PARAMETERS, parameters);
         }
     }
 }
