@@ -51,6 +51,7 @@ public class Homolosine extends MapProjection {
     private static final int[] INTERRUP_SOUTH = {-180, -100, -20, 80, 180};
 
     ParameterDescriptorGroup descriptors;
+    ParameterValueGroup parameters; // stored locally to skip computations in parent
 
     /**
      * Constructs a new map projection from the supplied parameters.
@@ -64,6 +65,7 @@ public class Homolosine extends MapProjection {
 
         super(parameters, descriptors.descriptors());
         this.descriptors = descriptors;
+        this.parameters = parameters;
     }
 
     /** {@inheritDoc} */
@@ -90,11 +92,11 @@ public class Homolosine extends MapProjection {
 
         if (phi > LAT_THRESH || phi < -LAT_THRESH) { // Mollweide
             Mollweide moll =
-                    Mollweide(
+                    new Mollweide(
                             Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
             return moll.transformNormalized(lam_shift, phi, ptDst);
         } else { // Sinusoidal
-            Sinusoidal sinu = Sinusoidal(this.parameters);
+            Sinusoidal sinu = new Sinusoidal(this.parameters);
             return sinu.transformNormalized(lam_shift, phi, ptDst);
         }
     }
@@ -110,11 +112,11 @@ public class Homolosine extends MapProjection {
 
         if (y > NORTH_THRESH || y < -NORTH_THRESH) { // Mollweide
             Mollweide moll =
-                    Mollweide(
+                    new Mollweide(
                             Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
             return moll.inverseTransformNormalized(x, y, ptDst);
         } else { // Sinusoidal
-            Sinusoidal sinu = Sinusoidal(this.parameters);
+            Sinusoidal sinu = new Sinusoidal(this.parameters);
             return sinu.inverseTransformNormalized(x, y, ptDst);
         }
     }
