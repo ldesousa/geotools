@@ -317,6 +317,16 @@ public final class ScriptTest {
     public void testSinusoidal() throws Exception {
         runScript("scripts/Sinusoidal.txt");
     }
+    
+    /**
+     * Run "Homolosine.txt"
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testHomolosine() throws Exception {
+        runScript("scripts/Homolosine.txt");
+    }
 
     /**
      * Run "Gnomonic.txt"
