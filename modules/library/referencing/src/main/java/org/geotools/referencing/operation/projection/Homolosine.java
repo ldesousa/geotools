@@ -53,6 +53,9 @@ public class Homolosine extends MapProjection {
     ParameterDescriptorGroup descriptors;
     ParameterValueGroup parameters; // stored locally to skip computations in parent
 
+    Mollweide moll;
+    Sinusoidal sinu;
+
     /**
      * Constructs a new map projection from the supplied parameters.
      *
@@ -66,6 +69,10 @@ public class Homolosine extends MapProjection {
         super(parameters, descriptors.descriptors());
         this.descriptors = descriptors;
         this.parameters = parameters;
+        this.sinu = new Sinusoidal(this.parameters);
+        this.moll =
+                new Mollweide(
+                        Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
     }
 
     /** {@inheritDoc} */
@@ -91,12 +98,8 @@ public class Homolosine extends MapProjection {
             lam_shift = lam - (interruptions[i] - interruptions[i - 1]) / 2;
 
         if (phi > LAT_THRESH || phi < -LAT_THRESH) { // Mollweide
-            Mollweide moll =
-                    new Mollweide(
-                            Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
             return moll.transformNormalized(lam_shift, phi, ptDst);
         } else { // Sinusoidal
-            Sinusoidal sinu = new Sinusoidal(this.parameters);
             return sinu.transformNormalized(lam_shift, phi, ptDst);
         }
     }
@@ -111,12 +114,8 @@ public class Homolosine extends MapProjection {
         double lam;
 
         if (y > NORTH_THRESH || y < -NORTH_THRESH) { // Mollweide
-            Mollweide moll =
-                    new Mollweide(
-                            Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
             return moll.inverseTransformNormalized(x, y, ptDst);
         } else { // Sinusoidal
-            Sinusoidal sinu = new Sinusoidal(this.parameters);
             return sinu.inverseTransformNormalized(x, y, ptDst);
         }
     }
