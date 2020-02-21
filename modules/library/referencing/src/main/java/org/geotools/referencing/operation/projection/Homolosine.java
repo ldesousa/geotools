@@ -21,6 +21,8 @@
 package org.geotools.referencing.operation.projection;
 
 import java.awt.geom.Point2D;
+import static java.lang.Math.toRadians;
+import static java.lang.Math.toDegrees;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.NamedIdentifier;
 import org.opengis.parameter.ParameterDescriptor;
@@ -44,11 +46,17 @@ public class Homolosine extends MapProjection {
     /** For cross-version compatibility. */
     private static final long serialVersionUID = -737778661392950541L;
 
-    private static double LAT_THRESH = 40 + 44 / 60. + 11.8 / 3600.;
+    private static double LAT_THRESH = toRadians(40 + 44 / 60. + 11.8 / 3600.);
     private static double NORTH_THRESH = 4534778.81;
+    //Difference between Mollweide and Sinusoidal at threshold latitude
+    private static double MOLL_OFFSET = 0.052803527368572; 
 
-    private static final int[] INTERRUP_NORTH = {-180, -40, 180};
-    private static final int[] INTERRUP_SOUTH = {-180, -100, -20, 80, 180};
+    private static final double[] INTERRUP_NORTH = {toRadians(-180), toRadians(-40), toRadians(180)};
+    private static final double[] INTERRUP_SOUTH = {toRadians(-180), toRadians(-100), toRadians(-20), 
+    											    toRadians(80), toRadians(180)};
+    private static final double[] CENTRAL_MERID_NORTH = {toRadians(-100), toRadians(30)};
+    private static final double[] CENTRAL_MERID_SOUTH = {toRadians(-160), toRadians(-60), 
+    													 toRadians(20), toRadians(140)};
 
     ParameterDescriptorGroup descriptors;
     ParameterValueGroup parameters; // stored locally to skip computations in parent
@@ -70,9 +78,32 @@ public class Homolosine extends MapProjection {
         this.descriptors = descriptors;
         this.parameters = parameters;
         this.sinu = new Sinusoidal(this.parameters);
-        this.moll =
-                new Mollweide(
-                        Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
+        this.moll = new Mollweide(
+                    	Mollweide.ProjectionMode.Mollweide, this.descriptors, this.parameters);
+//        try 
+//        {
+//	        Point2D thresh_sinu = sinu.transformNormalized(0., Homolosine.LAT_THRESH, null);
+//	        Point2D thresh_moll = moll.transformNormalized(0., Homolosine.LAT_THRESH, null);
+//	        this.NORTH_OFFSET = thresh_moll.getY() - thresh_sinu.getY();
+//	        System.out.println("###### The difference: " + this.NORTH_OFFSET);
+//	        System.out.println("The difference in meters: " + this.NORTH_OFFSET * moll.globalScale);
+//	        System.out.println("Scale for Mollweide: " + moll.globalScale);
+//	        System.out.println("Scale for Sinusoidal: " + sinu.globalScale + "\n");
+//
+//	        System.out.println("\n ##### Test points");
+//	        
+//	        for(double lat = 5; lat <= 40; lat+=5)
+//	        {
+//	        	Point2D p = sinu.transformNormalized(0., Math.toRadians(lat), null);
+//		        System.out.println(lat + ";" + p.getY() * sinu.globalScale);
+//	        }
+//	        
+//	        
+//        } catch (ProjectionException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+        
     }
 
     /** {@inheritDoc} */
@@ -87,21 +118,58 @@ public class Homolosine extends MapProjection {
     protected Point2D transformNormalized(double lam, double phi, Point2D ptDst)
             throws ProjectionException {
 
-        int[] interruptions;
+        double[] interruptions;
+        double[] central_merids;
+        double offset = 0;
         int i = 0;
+        double central_merid = 0;
         double lam_shift = 0;
+        Point2D p;
+        Point2D shift;
+        
+        System.out.println("\nCoordinates recieved: " + Math.toDegrees(lam) + " " + Math.toDegrees(phi));
 
-        if (phi >= 0) interruptions = INTERRUP_NORTH;
-        else interruptions = INTERRUP_SOUTH;
-
-        while (phi > interruptions[i++])
-            lam_shift = lam - (interruptions[i] - interruptions[i - 1]) / 2;
-
-        if (phi > LAT_THRESH || phi < -LAT_THRESH) { // Mollweide
-            return moll.transformNormalized(lam_shift, phi, ptDst);
-        } else { // Sinusoidal
-            return sinu.transformNormalized(lam_shift, phi, ptDst);
+        if (phi >= 0) {
+        	interruptions = INTERRUP_NORTH;
+        	central_merids = CENTRAL_MERID_NORTH;
+        	offset = this.MOLL_OFFSET;
         }
+        else {
+        	interruptions = INTERRUP_SOUTH;
+        	central_merids = CENTRAL_MERID_SOUTH;
+        	offset = - this.MOLL_OFFSET;
+        }
+
+        while (lam > interruptions[++i]); 
+    	central_merid = central_merids[i - 1];
+        lam_shift = lam - central_merid;
+        
+        System.out.println("lobe_shift: " + toDegrees(central_merid));
+        System.out.println("Coordinates to transform: " + Math.toDegrees(lam_shift) + " " + Math.toDegrees(phi));
+        
+        if (phi > LAT_THRESH || phi < -LAT_THRESH) { // Mollweide
+        	System.out.println("Will use Mollweide");			
+            p = moll.transformNormalized(lam_shift, phi, ptDst);
+            p.setLocation(p.getX(), p.getY() - offset);
+        } else { // Sinusoidal
+    	    System.out.println("Will use Sinusoidal");	
+            p = sinu.transformNormalized(lam_shift, phi, ptDst);
+        }
+        
+        System.out.println("Coordinates transformed: " + p.getX() * sinu.globalScale + " " + p.getY() * sinu.globalScale);
+        
+        //Point2D shift_sin = sinu.transformNormalized(central_merid, 0., null);
+        //System.out.println("Lobe shift Sinusoidal 0: " + shift_sin.getX() * sinu.globalScale + " " + shift_sin.getY() * sinu.globalScale);
+        //Point2D shift_sin_phi = sinu.transformNormalized(central_merid, phi, null);
+        //System.out.println("Lobe shift Sinusoidal phi: " + shift_sin_phi.getX() * sinu.globalScale + " " + shift_sin_phi.getY() * sinu.globalScale);
+        //double east = p.getX() + shift_sin.getX();
+        //System.out.println("Final easting: " + east);
+        
+        shift = sinu.transformNormalized(central_merid, 0., null);
+        System.out.println("Lobe shift: " + shift.getX() * sinu.globalScale + " " + shift.getY() * sinu.globalScale);
+        p.setLocation(p.getX() + shift.getX(), p.getY());
+        System.out.println("Final result: " + p.getX() * sinu.globalScale + " " + p.getY() * sinu.globalScale);
+        return p;
     }
 
     /**

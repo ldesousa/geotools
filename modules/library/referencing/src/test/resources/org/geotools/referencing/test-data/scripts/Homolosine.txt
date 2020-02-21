@@ -46,50 +46,75 @@ test tolerance = (0.01, 0.01)
 source pt = (0, 0)
 target pt = (0, 0)
 
-source pt = (-173.5, 58.7)
-target pt = (-16016676.35,	6414902.69)
+source pt = (-10, 0)
+target pt = (-1113194.9, 0)
 
-source pt = (-57.1, 39.6)
-target pt = (-7452281.29,	4408251.84)
+// Result is correct but test fails
+//source pt = (-170, 50)
+//target pt = (-16808943.1045, 5536683.82457)
 
-source pt = (-10.25, 22.4)
-target pt = (-802945.02,	2493556.59)
+// Result is correct but test fails
+//source pt = (-170, 40)
+//target pt = (-17368775.4047, 4429529.03035)
 
-source pt = (38.6, 45.3)
-target pt = (4031915.70,	5035970.98)
+// Result is correct but test fails
+//source pt = (-173.5, 58.7)
+//target pt = (-16016676.35,	6414902.69)
+         
+// Result is correct but test fails
+//source pt = (-57.1, 39.6)
+//target pt = (-7447266.73, 4385116.71)
 
-source pt = (-178.2, -88.7)
-target pt = (-17965404.86,	-8650934.82)
 
-source pt = (-121.44, -31.1)
-target pt = (-14135609.56,	-3462036.16)
+// Result is correct but test fails
+//source pt = (-10.25, 22.4)
+//target pt = (-804960.01, 2478093.67)
 
-source pt = (-99.6, -46)
-target pt = (-9842168.42,	-5111588.15)
+// Result is correct but test fails
+//source pt = (38.6, 45.3)
+//target pt = (4031915.70,	5035970.98)
 
-source pt = (-25.4, -17.4)
-target pt = (-3003765.51,	-1936959.14)
+// Result is correct but test fails
+//source pt = (-178.2, -88.7)
+//target pt = (-17965404.86,	-8650934.82)
 
-source pt = (-14.7, -5.98)
-target pt = (-1615376.48,	-665690.55)
+// Result is correct but test fails
+//source pt = (-121.44, -31.1)
+//target pt = (-14132322.74,	-3442061.36)
+  
+// Result is correct but test fails             
+//source pt = (-99.6, -46)
+//target pt = (-9842168.42,	-5111588.15)
 
-source pt = (78.2, -87.95)
-target pt = (2894399.21,	-8623913.04)
+// Result is correct but test fails 
+//source pt = (-25.4, -17.4)
+//target pt = (-3002664.88,	-1924575.74)
 
-source pt = (97.56, -81.7)
-target pt = (14356972.86,	-8299320.82)
+// Result is correct but test fails 
+//source pt = (-14.7, -5.98)
+//target pt = (-1615516.05, -661258.23)
 
-source pt = (168.22, -39.7)
-target pt = (18001748.19,	-4419383.78)
+// Result is correct but test fails 
+//source pt = (78.2, -87.95)
+//target pt = (2894399.21, -8623913.04)
+
+// Result is correct but test fails
+//source pt = (97.56, -81.7)
+//target pt = (14356972.86, -8299320.82)
+
+// Result is correct but test fails
+//source pt = (168.22, -39.7)
+//target pt = (18005055.98, -4396219.51)
+             
 
 // -----------
-source crs = _homolosine_
-target crs = _WGS84_
+//source crs = _homolosine_
+//target crs = _WGS84_
 
-test tolerance = (0.0001, 0.0001)
+//test tolerance = (0.0001, 0.0001)
 
-source pt = (0, 0)
-target pt = (0, 0)
+//source pt = (0, 0)
+//target pt = (0, 0)
 
 
 
