@@ -317,7 +317,7 @@ public final class ScriptTest {
     public void testSinusoidal() throws Exception {
         runScript("scripts/Sinusoidal.txt");
     }
-    
+
     /**
      * Run "Homolosine.txt"
      *
