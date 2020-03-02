@@ -60,14 +60,6 @@ public class Homolosine extends MapProjection {
     private static final double[] CENTRAL_MERID_SOUTH = {toRadians(-160), toRadians(-60), 
     													 toRadians(20), toRadians(140)};
 
-    private static final double[] INTERRUP_NORTH_MAP = {-20037508.35, -4452779.631, 20037508.35};
-    private static final double[] INTERRUP_SOUTH_MAP = {-20037508.35, -11131949.079, -2226389.815, 
-    													  8905559.263, 20037508.35};
-    
-    /*private static final double[] CENTRAL_EASTING_NORTH = {toRadians(-11131949.079), toRadians(3339584.723)};
-    private static final double[] CENTRAL_EASTING_SOUTH = {toRadians(-17811118.526), toRadians(-6679169.447), 
-    													 toRadians(2226389.815), toRadians(15584728.711)};
-    */
     ParameterDescriptorGroup descriptors;
     ParameterValueGroup parameters; // stored locally to skip computations in parent
 
@@ -144,13 +136,6 @@ public class Homolosine extends MapProjection {
         
         System.out.println("Coordinates transformed: " + p.getX() * sinu.globalScale + " " + p.getY() * sinu.globalScale);
         
-        //Point2D shift_sin = sinu.transformNormalized(central_merid, 0., null);
-        //System.out.println("Lobe shift Sinusoidal 0: " + shift_sin.getX() * sinu.globalScale + " " + shift_sin.getY() * sinu.globalScale);
-        //Point2D shift_sin_phi = sinu.transformNormalized(central_merid, phi, null);
-        //System.out.println("Lobe shift Sinusoidal phi: " + shift_sin_phi.getX() * sinu.globalScale + " " + shift_sin_phi.getY() * sinu.globalScale);
-        //double east = p.getX() + shift_sin.getX();
-        //System.out.println("Final easting: " + east);
-        
         shift = sinu.transformNormalized(central_merid, 0., null);
         System.out.println("Lobe shift: " + shift.getX() * sinu.globalScale + " " + shift.getY() * sinu.globalScale);
         p.setLocation(p.getX() + shift.getX(), p.getY());
@@ -183,17 +168,22 @@ public class Homolosine extends MapProjection {
         System.out.println("\nMap coordinates recieved: " + (x * sinu.globalScale) + " " + (y * sinu.globalScale));
 
         if (y >= 0) {
-        	interruptions = INTERRUP_NORTH_MAP;
+        	//interruptions = INTERRUP_NORTH;
         	central_merids = CENTRAL_MERID_NORTH;
         	offset = MOLL_OFFSET_MAP / sinu.globalScale;
+        	interruptions = new double[INTERRUP_NORTH.length];
+        	for (int j=0; j < INTERRUP_NORTH.length; j++)
+        		interruptions[j] = sinu.transformNormalized(INTERRUP_NORTH[j], 0, null).getX();
         }
         else {
-        	interruptions = INTERRUP_SOUTH_MAP;
         	central_merids = CENTRAL_MERID_SOUTH;
         	offset = - MOLL_OFFSET_MAP / sinu.globalScale;
+        	interruptions = new double[INTERRUP_SOUTH.length];
+        	for (int j=0; j < INTERRUP_SOUTH.length; j++)
+        		interruptions[j] = sinu.transformNormalized(INTERRUP_SOUTH[j], 0, null).getX();
         }
 
-        while (x > (interruptions[i] / sinu.globalScale)) i++; 
+        while (x > interruptions[++i]); 
     	central_merid = central_merids[i - 1];
     	shift = sinu.transformNormalized(central_merid, 0, null);
     	
