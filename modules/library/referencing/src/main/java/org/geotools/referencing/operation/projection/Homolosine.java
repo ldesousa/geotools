@@ -47,10 +47,6 @@ public class Homolosine extends MapProjection {
     private static final long serialVersionUID = -737778661392950541L;
 
     private static double LAT_THRESH = toRadians(40 + 44 / 60. + 11.8 / 3600.);
-    private static double NORTH_THRESH = 4534778.81; // Computed with PROJ
-    //Difference between Mollweide and Sinusoidal at threshold latitude
-    private static double MOLL_OFFSET = 0.052803527368572; 
-    private static double MOLL_OFFSET_MAP = 4871566.93717 - NORTH_THRESH;
 
     private static final double[] INTERRUP_NORTH = {toRadians(-180), toRadians(-40), toRadians(180)};
     private static final double[] INTERRUP_SOUTH = {toRadians(-180), toRadians(-100), toRadians(-20), 
@@ -88,7 +84,20 @@ public class Homolosine extends MapProjection {
     public ParameterDescriptorGroup getParameterDescriptors() {
         return Provider.PARAMETERS;
     }
-
+    
+    /**
+     * Computes the Northing difference between Sinusoidal and Mollweide at the threshold
+     * latitude. Result depends on the datum and scaling parameters.  
+     * @return Northing offset between Sinusoidal and Mollweide at threshold latitude.
+     * @throws ProjectionException 
+     */
+    protected double computeOffset() throws ProjectionException
+    {
+    	Point2D sinu_tresh = sinu.transformNormalized(0, LAT_THRESH,  null);
+        Point2D moll_tresh = moll.transformNormalized(0, LAT_THRESH,  null);
+        return moll_tresh.getY() - sinu_tresh.getY();
+    }
+    
     /**
      * Transforms the specified (<var>&lambda;</var>,<var>&phi;</var>) coordinates (units in
      * radians) and stores the result in {@code ptDst} (linear distance on a unit sphere).
@@ -98,7 +107,7 @@ public class Homolosine extends MapProjection {
 
         double[] interruptions;
         double[] central_merids;
-        double offset = 0;
+        double offset = computeOffset();
         int i = 0;
         double central_merid = 0;
         double lam_shift = 0;
@@ -107,15 +116,17 @@ public class Homolosine extends MapProjection {
         
         System.out.println("\nCoordinates recieved: " + Math.toDegrees(lam) + " " + Math.toDegrees(phi));
 
+        System.out.println("Difference: " + offset);
+        System.out.println("Difference scaled: " + (offset * sinu.globalScale));
+        
         if (phi >= 0) {
         	interruptions = INTERRUP_NORTH;
         	central_merids = CENTRAL_MERID_NORTH;
-        	offset = MOLL_OFFSET;
         }
         else {
         	interruptions = INTERRUP_SOUTH;
         	central_merids = CENTRAL_MERID_SOUTH;
-        	offset = - MOLL_OFFSET;
+        	offset = - offset;
         }
 
         while (lam > interruptions[++i]); 
@@ -158,26 +169,24 @@ public class Homolosine extends MapProjection {
     	
     	double[] interruptions;
         double[] central_merids;
-        double offset = 0;
+        double offset = computeOffset();
         int i = 0;
         double central_merid = 0;
         Point2D p;
         Point2D shift;
-        Point2D offset_p;
+        double thresh_map = sinu.transformNormalized(0, LAT_THRESH, null).getY();
         
         System.out.println("\nMap coordinates recieved: " + (x * sinu.globalScale) + " " + (y * sinu.globalScale));
 
         if (y >= 0) {
-        	//interruptions = INTERRUP_NORTH;
         	central_merids = CENTRAL_MERID_NORTH;
-        	offset = MOLL_OFFSET_MAP / sinu.globalScale;
         	interruptions = new double[INTERRUP_NORTH.length];
         	for (int j=0; j < INTERRUP_NORTH.length; j++)
         		interruptions[j] = sinu.transformNormalized(INTERRUP_NORTH[j], 0, null).getX();
         }
         else {
         	central_merids = CENTRAL_MERID_SOUTH;
-        	offset = - MOLL_OFFSET_MAP / sinu.globalScale;
+        	offset = - offset;
         	interruptions = new double[INTERRUP_SOUTH.length];
         	for (int j=0; j < INTERRUP_SOUTH.length; j++)
         		interruptions[j] = sinu.transformNormalized(INTERRUP_SOUTH[j], 0, null).getX();
@@ -186,17 +195,12 @@ public class Homolosine extends MapProjection {
         while (x > interruptions[++i]); 
     	central_merid = central_merids[i - 1];
     	shift = sinu.transformNormalized(central_merid, 0, null);
-    	
-    	offset_p = sinu.transformNormalized(0, MOLL_OFFSET, null);
-        
+    	       
         System.out.println("lobe_shift: " + toDegrees(central_merid));
-        System.out.println("Offset: " + offset_p.getY() * sinu.globalScale);
+        System.out.println("Offset: " + offset * sinu.globalScale);
         System.out.println("Coordinates to transform: " + ((x - shift.getX()) * sinu.globalScale) + " " + (y * sinu.globalScale));
 
-        if (y > (NORTH_THRESH / sinu.globalScale) || 
-        	y < (-NORTH_THRESH / sinu.globalScale)) { // Mollweide
-        	System.out.println("Coordinates to transform Mollweide: " + ((x - shift.getX()) * sinu.globalScale) + " " + ((y + offset_p.getY()) * sinu.globalScale));
-            //p = moll.inverseTransformNormalized(x - shift.getX(), y + offset_p.getY(), ptDst);
+        if (y > thresh_map || y < -thresh_map) { // Mollweide
         	p = moll.inverseTransformNormalized(x - shift.getX(), y + offset, ptDst);
         } else { // Sinusoidal
             p = sinu.inverseTransformNormalized(x - shift.getX(), y, ptDst);
