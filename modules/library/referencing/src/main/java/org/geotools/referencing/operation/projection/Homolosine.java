@@ -2,7 +2,7 @@
  *    GeoTools - The Open Source Java GIS Toolkit
  *    http://geotools.org
  *
- *    (C) 2019, Open Source Geospatial Foundation (OSGeo)
+ *    (C) 2020, Open Source Geospatial Foundation (OSGeo)
  *
  *    This library is free software; you can redistribute it and/or
  *    modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ import org.opengis.referencing.operation.MathTransform;
  *     American Geographers. 15 (3): 119–125</A>
  * @see <A HREF="https://en.wikipedia.org/wiki/Goode_homolosine_projection">The Homolosine
  *     projection on Wikipedia</A>
- * @since 14.0 << Check what is this
+ * @since 22.x
  * @author Luís M. de Sousa
  */
 public class Homolosine extends MapProjection {
@@ -229,8 +229,8 @@ public class Homolosine extends MapProjection {
      * The {@linkplain org.geotools.referencing.operation.MathTransformProvider math transform
      * provider} for the Homolosine projection (not part of the EPSG database).
      *
-     * @since 14.0
-     * @author Mihail Andreev
+     * @since 22.x
+     * @author Luís M. de Sousa
      * @see org.geotools.referencing.operation.DefaultMathTransformFactory
      */
     public static class Provider extends AbstractProvider {
