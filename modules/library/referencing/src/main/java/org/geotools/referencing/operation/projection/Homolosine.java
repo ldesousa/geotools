@@ -2,7 +2,7 @@
  *    GeoTools - The Open Source Java GIS Toolkit
  *    http://geotools.org
  *
- *    (C) 2019, Open Source Geospatial Foundation (OSGeo)
+ *    (C) 2020, Open Source Geospatial Foundation (OSGeo)
  *
  *    This library is free software; you can redistribute it and/or
  *    modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ import org.opengis.referencing.operation.MathTransform;
  *     American Geographers. 15 (3): 119–125</A>
  * @see <A HREF="https://en.wikipedia.org/wiki/Goode_homolosine_projection">The Homolosine
  *     projection on Wikipedia</A>
- * @since 14.0 << Check what is this
+ * @since 22.x
  * @author Luís M. de Sousa
  */
 public class Homolosine extends MapProjection {
@@ -114,11 +114,6 @@ public class Homolosine extends MapProjection {
         Point2D p;
         Point2D shift;
         
-        System.out.println("\nCoordinates recieved: " + Math.toDegrees(lam) + " " + Math.toDegrees(phi));
-
-        System.out.println("Difference: " + offset);
-        System.out.println("Difference scaled: " + (offset * sinu.globalScale));
-        
         if (phi >= 0) {
         	interruptions = INTERRUP_NORTH;
         	central_merids = CENTRAL_MERID_NORTH;
@@ -133,24 +128,15 @@ public class Homolosine extends MapProjection {
     	central_merid = central_merids[i - 1];
         lam_shift = lam - central_merid;
         
-        System.out.println("lobe_shift: " + toDegrees(central_merid));
-        System.out.println("Coordinates to transform: " + Math.toDegrees(lam_shift) + " " + Math.toDegrees(phi));
-        
         if (phi > LAT_THRESH || phi < -LAT_THRESH) { // Mollweide
-        	System.out.println("Will use Mollweide");			
             p = moll.transformNormalized(lam_shift, phi, ptDst);
             p.setLocation(p.getX(), p.getY() - offset);
         } else { // Sinusoidal
-    	    System.out.println("Will use Sinusoidal");	
             p = sinu.transformNormalized(lam_shift, phi, ptDst);
         }
         
-        System.out.println("Coordinates transformed: " + p.getX() * sinu.globalScale + " " + p.getY() * sinu.globalScale);
-        
         shift = sinu.transformNormalized(central_merid, 0., null);
-        System.out.println("Lobe shift: " + shift.getX() * sinu.globalScale + " " + shift.getY() * sinu.globalScale);
         p.setLocation(p.getX() + shift.getX(), p.getY());
-        System.out.println("Final result: " + p.getX() * sinu.globalScale + " " + p.getY() * sinu.globalScale);
         
         if (ptDst != null) {
             ptDst.setLocation(p.getX(), p.getY());
@@ -176,8 +162,6 @@ public class Homolosine extends MapProjection {
         Point2D shift;
         double thresh_map = sinu.transformNormalized(0, LAT_THRESH, null).getY();
         
-        System.out.println("\nMap coordinates recieved: " + (x * sinu.globalScale) + " " + (y * sinu.globalScale));
-
         if (y >= 0) {
         	central_merids = CENTRAL_MERID_NORTH;
         	interruptions = new double[INTERRUP_NORTH.length];
@@ -196,10 +180,6 @@ public class Homolosine extends MapProjection {
     	central_merid = central_merids[i - 1];
     	shift = sinu.transformNormalized(central_merid, 0, null);
     	       
-        System.out.println("lobe_shift: " + toDegrees(central_merid));
-        System.out.println("Offset: " + offset * sinu.globalScale);
-        System.out.println("Coordinates to transform: " + ((x - shift.getX()) * sinu.globalScale) + " " + (y * sinu.globalScale));
-
         if (y > thresh_map || y < -thresh_map) { // Mollweide
         	p = moll.inverseTransformNormalized(x - shift.getX(), y + offset, ptDst);
         } else { // Sinusoidal
@@ -207,7 +187,6 @@ public class Homolosine extends MapProjection {
         }
                        
         p.setLocation(p.getX() + central_merid, p.getY());
-        System.out.println("Final result geographic: " + toDegrees(p.getX()) + " " + toDegrees(p.getY()));
         
         if (ptDst != null) {
             ptDst.setLocation(p.getX(), p.getY());
@@ -229,8 +208,8 @@ public class Homolosine extends MapProjection {
      * The {@linkplain org.geotools.referencing.operation.MathTransformProvider math transform
      * provider} for the Homolosine projection (not part of the EPSG database).
      *
-     * @since 14.0
-     * @author Mihail Andreev
+     * @since 22.x
+     * @author Luís M. de Sousa
      * @see org.geotools.referencing.operation.DefaultMathTransformFactory
      */
     public static class Provider extends AbstractProvider {

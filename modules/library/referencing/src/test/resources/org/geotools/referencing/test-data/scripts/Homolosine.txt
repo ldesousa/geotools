@@ -1,15 +1,17 @@
 // Test points for the Homolosine projection
 //
-// (C) 2019, Open Source Geospatial Foundation (OSGeo)
+// (C) 2020, Open Source Geospatial Foundation (OSGeo)
 //
 // The following test points were calculated with GeoTools itself, applying 
 // the Mollweide and Sinusoidal projections. 
 // 
 //
-// Luís Moreira de Sousa - September 2019
+// Luís Moreira de Sousa - March 2020
 //
 // --------------------------------------------------------------------------
-// How to run this script:
+// The instructions below show how the unit test could be run from command line. They are 
+// known to fail but are left here for reference. Unit tests should be run from an IDE 
+// like Eclipse.
 //
 // 1. Move to the referencing subfolder
 // $ cd ./modules/library/referencing
