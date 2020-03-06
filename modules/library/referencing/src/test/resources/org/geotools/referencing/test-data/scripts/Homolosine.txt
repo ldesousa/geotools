@@ -9,9 +9,9 @@
 // Luís Moreira de Sousa - March 2020
 //
 // --------------------------------------------------------------------------
-// The instructions below show how the unit test could be run from command line. They are 
-// known to fail but are left here for reference. Unit tests should be run from an IDE 
-// like Eclipse.
+// The instructions below show how the unit test could be run from the command line. They 
+// are known to fail but are left here for reference. Unit tests should be run from an 
+// IDE like Eclipse.
 //
 // 1. Move to the referencing subfolder
 // $ cd ./modules/library/referencing

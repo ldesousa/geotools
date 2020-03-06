@@ -22,7 +22,6 @@ package org.geotools.referencing.operation.projection;
 
 import java.awt.geom.Point2D;
 import static java.lang.Math.toRadians;
-import static java.lang.Math.toDegrees;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.NamedIdentifier;
 import org.opengis.parameter.ParameterDescriptor;
@@ -44,7 +43,7 @@ import org.opengis.referencing.operation.MathTransform;
  */
 public class Homolosine extends MapProjection {
     /** For cross-version compatibility. */
-    private static final long serialVersionUID = -737778661392950541L;
+	private static final long serialVersionUID = 4740760391570944118L;
 
     private static double LAT_THRESH = toRadians(40 + 44 / 60. + 11.8 / 3600.);
 
@@ -213,8 +212,9 @@ public class Homolosine extends MapProjection {
      * @see org.geotools.referencing.operation.DefaultMathTransformFactory
      */
     public static class Provider extends AbstractProvider {
-        /** For cross-version compatibility. */
-        private static final long serialVersionUID = 8374488793001927036L;
+
+		/** For cross-version compatibility. */
+    	private static final long serialVersionUID = -7345885830045627291L;
 
         /** The parameters group. */
         static final ParameterDescriptorGroup PARAMETERS =
